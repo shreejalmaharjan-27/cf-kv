@@ -9,7 +9,7 @@ class KV {
         this.accountId = accountId;
         this.token = token;
     }
-    async get(key: string) {
+    async get(key: string): Promise<string | null> {
         return this.core('GET', key);
     }
 
@@ -51,6 +51,12 @@ class KV {
           );
 
           if (!request.ok) {
+            if (requestType === 'GET' && request.headers.get('Content-Type')?.includes('application/json')) {
+              const response = await request.json();
+              if (response.result === null) {
+                return null;
+              }
+            }
             const response = await request.text();
             throw new Error(JSON.stringify({
                 status: request.status,
